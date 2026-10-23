@@ -1,54 +1,80 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Crosshair, Activity, ShieldAlert, ArrowUpRight } from 'lucide-react';
 import { TeamLogo } from './TeamLogo';
 import { CONTESTANTS } from '../data/nbaData';
 
 export function SwingRadarSection({ enrichedTeams, onQuickFilter }) {
-  // Deadlock Teams (5-5 split)
+  const [mobileTab, setMobileTab] = useState('DEADLOCK'); // 'DEADLOCK' | 'VOLATILE' | 'CONSENSUS'
+
   const deadlockTeams = enrichedTeams.filter((t) => t.is5050);
-  // 6-4 Split Teams
   const sixtyFortyTeams = enrichedTeams.filter((t) => t.maxSplitPct === 60);
 
-  // Volatile Pace Teams: abs(Projected Wins - Line) <= 1.5
   const volatileTeams = [...enrichedTeams]
     .filter((t) => t.isVolatilePace)
     .sort((a, b) => Math.abs(a.paceDiff) - Math.abs(b.paceDiff));
 
-  // Unanimous & 90/10 Contrarian Island Picks
   const consensusAndSoloTeams = enrichedTeams.filter(
     (t) => t.isUnanimous || t.isNearUnanimous
   );
 
   return (
-    <section className="space-y-3">
+    <section className="space-y-2.5">
       {/* Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b-2 border-[#2A2F3A] pb-2">
-        <div className="flex items-center gap-3">
-          <div className="w-1.5 h-6 bg-[#1D428A]" />
-          <div>
-            <div className="flex items-center gap-2.5">
-              <h2 className="font-display text-xl sm:text-2xl font-bold uppercase tracking-wider text-white">
-                02 // HIGH-STAKES & SWING RADAR
-              </h2>
-              <span className="font-mono text-[11px] uppercase px-2 py-0.5 bg-[#1A1D23] border border-[#2A2F3A] text-[#D97706]">
-                LEVERAGE TELEMETRY
-              </span>
-            </div>
-            <p className="text-xs text-[#9CA3AF] font-mono">
-              ISOLATING 5-5 DEADLOCK SPLITS, VOLATILE PACE MARGINS (ABS DELTA &lt;= 1.5), AND 90-10 CONTRARIAN OUTLIERS
-            </p>
-          </div>
+      <div className="flex items-center justify-between gap-2 border-b-2 border-[#2A2F3A] pb-1.5">
+        <div className="flex items-center gap-2.5">
+          <div className="w-1.5 h-5 bg-[#1D428A]" />
+          <h2 className="font-display text-lg sm:text-2xl font-bold uppercase tracking-wider text-white">
+            02 // SWING RADAR
+          </h2>
+        </div>
+
+        {/* Mobile Tab Switcher so mobile users don't scroll past 3 tall boxes */}
+        <div className="flex lg:hidden bg-[#1A1D23] border border-[#2A2F3A] font-mono text-[10px]">
+          <button
+            onClick={() => setMobileTab('DEADLOCK')}
+            className={`px-2 py-1 font-bold uppercase ${
+              mobileTab === 'DEADLOCK'
+                ? 'bg-[#D97706] text-[#121316]'
+                : 'text-[#9CA3AF]'
+            }`}
+          >
+            5-5 ({deadlockTeams.length})
+          </button>
+          <button
+            onClick={() => setMobileTab('VOLATILE')}
+            className={`px-2 py-1 font-bold uppercase border-l border-[#2A2F3A] ${
+              mobileTab === 'VOLATILE'
+                ? 'bg-[#D97706] text-[#121316]'
+                : 'text-[#9CA3AF]'
+            }`}
+          >
+            PACE ({volatileTeams.length})
+          </button>
+          <button
+            onClick={() => setMobileTab('CONSENSUS')}
+            className={`px-2 py-1 font-bold uppercase border-l border-[#2A2F3A] ${
+              mobileTab === 'CONSENSUS'
+                ? 'bg-[#D97706] text-[#121316]'
+                : 'text-[#9CA3AF]'
+            }`}
+          >
+            90-100% ({consensusAndSoloTeams.length})
+          </button>
         </div>
       </div>
 
-      {/* 3-Column Technical Telemetry Grid */}
+      {/* 3-Column Technical Telemetry Grid (Tabbed on Mobile, 3-Col on Desktop) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         {/* Panel 1: 5-5 Deadlock Teams */}
-        <div className="bg-[#1A1D23] border-2 border-[#2A2F3A] flex flex-col justify-between">
+        <div
+          className={`${
+            mobileTab === 'DEADLOCK' ? 'block' : 'hidden lg:flex'
+          } bg-[#1A1D23] border-2 border-[#2A2F3A] flex-col justify-between`}
+        >
           <div>
-            <div className="px-3.5 py-2.5 bg-[#121316] border-b border-[#2A2F3A] flex items-center justify-between">
+            <div className="px-3 py-2 bg-[#121316] border-b border-[#2A2F3A] flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Crosshair className="w-4 h-4 text-[#D97706]" />
+                <Crosshair className="w-3.5 h-3.5 text-[#D97706]" />
                 <h3 className="font-display text-sm font-bold uppercase tracking-wider text-white">
                   DEADLOCK SPLITS (5 OVR / 5 UND)
                 </h3>
@@ -62,7 +88,7 @@ export function SwingRadarSection({ enrichedTeams, onQuickFilter }) {
               </button>
             </div>
 
-            <div className="p-3 space-y-2.5">
+            <div className="p-2.5 space-y-2">
               {deadlockTeams.map((team) => {
                 const overGroup = CONTESTANTS.filter((p) => team.picks[p] === 'Over');
                 const underGroup = CONTESTANTS.filter((p) => team.picks[p] === 'Under');
@@ -73,76 +99,62 @@ export function SwingRadarSection({ enrichedTeams, onQuickFilter }) {
                 return (
                   <div
                     key={team.team}
-                    className="bg-[#121316] border border-[#2A2F3A] p-3 space-y-2"
+                    className="bg-[#121316] border border-[#2A2F3A] p-2.5 space-y-2"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2.5">
+                      <div className="flex items-center gap-2">
                         <TeamLogo
                           team={team.team}
                           abbr={team.abbr}
                           logoUrl={team.logoUrl}
                           fallbackLogoUrl={team.fallbackLogoUrl}
-                          size="w-6 h-6"
+                          size="w-5 h-5"
                         />
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-display text-base font-bold uppercase tracking-wide text-white">
-                              {team.abbr}
-                            </span>
-                            <span className="text-xs text-[#9CA3AF] font-medium">
-                              {team.team}
-                            </span>
-                          </div>
-                          <div className="font-mono text-[10px] text-[#9CA3AF] tabular-nums">
-                            REC: <strong className="text-white">{team.wins}-{team.losses}</strong> | LINE:{' '}
-                            <strong className="text-white">{team.line.toFixed(1)}</strong>
-                          </div>
-                        </div>
+                        <span className="font-display text-base font-bold uppercase tracking-wide text-white">
+                          {team.abbr}
+                        </span>
+                        <span className="font-mono text-[10px] text-[#9CA3AF] tabular-nums">
+                          {team.wins}-{team.losses} | LINE {team.line.toFixed(1)}
+                        </span>
                       </div>
 
                       <div className="text-right font-mono tabular-nums">
                         <div
-                          className={`text-xs font-bold px-1.5 py-0.5 border ${
+                          className={`text-[11px] font-bold px-1.5 py-0.5 border ${
                             isOverPace
                               ? 'bg-[#064E3B] text-[#10B981] border-[#059669]'
                               : 'bg-[#7F1D1D] text-[#EF4444] border-[#DC2626]'
                           }`}
                         >
-                          PROJ {team.projectedWins.toFixed(1)} ({deltaStr})
+                          {team.projectedWins.toFixed(1)} ({deltaStr})
                         </div>
                       </div>
                     </div>
 
                     {/* 5 vs 5 Player Breakdown */}
-                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#2A2F3A] font-mono text-[10px]">
+                    <div className="grid grid-cols-2 gap-1.5 pt-1.5 border-t border-[#2A2F3A] font-mono text-[10px]">
                       <div
-                        className={`p-2 border ${
+                        className={`p-1.5 border ${
                           isOverPace
                             ? 'bg-[#064E3B]/40 border-[#059669]'
                             : 'bg-[#1A1D23] border-[#2A2F3A]'
                         }`}
                       >
-                        <div className="flex items-center justify-between font-bold text-[#10B981] mb-1">
-                          <span>OVR CAMP [5]</span>
-                          {isOverPace && <span className="text-[9px] uppercase">AHEAD</span>}
-                        </div>
-                        <div className="text-[#F3F4F6] leading-relaxed">
+                        <div className="font-bold text-[#10B981] mb-0.5">OVR [5]</div>
+                        <div className="text-[#F3F4F6] truncate" title={overGroup.join(', ')}>
                           {overGroup.join(', ')}
                         </div>
                       </div>
 
                       <div
-                        className={`p-2 border ${
+                        className={`p-1.5 border ${
                           !isOverPace
                             ? 'bg-[#7F1D1D]/40 border-[#DC2626]'
                             : 'bg-[#1A1D23] border-[#2A2F3A]'
                         }`}
                       >
-                        <div className="flex items-center justify-between font-bold text-[#EF4444] mb-1">
-                          <span>UND CAMP [5]</span>
-                          {!isOverPace && <span className="text-[9px] uppercase">AHEAD</span>}
-                        </div>
-                        <div className="text-[#F3F4F6] leading-relaxed">
+                        <div className="font-bold text-[#EF4444] mb-0.5">UND [5]</div>
+                        <div className="text-[#F3F4F6] truncate" title={underGroup.join(', ')}>
                           {underGroup.join(', ')}
                         </div>
                       </div>
@@ -152,9 +164,9 @@ export function SwingRadarSection({ enrichedTeams, onQuickFilter }) {
               })}
 
               {/* 6-4 Split Summary */}
-              <div className="bg-[#121316] border border-[#2A2F3A] px-3 py-2 flex items-center justify-between font-mono text-[11px]">
-                <span className="text-[#9CA3AF]">6-4 SWING SPLITS ({sixtyFortyTeams.length}):</span>
-                <span className="text-white font-semibold">
+              <div className="bg-[#121316] border border-[#2A2F3A] px-2.5 py-1.5 flex items-center justify-between font-mono text-[10px]">
+                <span className="text-[#9CA3AF]">6-4 SPLITS ({sixtyFortyTeams.length}):</span>
+                <span className="text-white font-semibold truncate ml-2">
                   {sixtyFortyTeams.map((t) => t.abbr).join(' · ')}
                 </span>
               </div>
@@ -162,14 +174,18 @@ export function SwingRadarSection({ enrichedTeams, onQuickFilter }) {
           </div>
         </div>
 
-        {/* Panel 2: Volatile Pace Teams (abs(Projected Wins - Line) <= 1.5) */}
-        <div className="bg-[#1A1D23] border-2 border-[#2A2F3A] flex flex-col justify-between">
+        {/* Panel 2: Volatile Pace Teams */}
+        <div
+          className={`${
+            mobileTab === 'VOLATILE' ? 'block' : 'hidden lg:flex'
+          } bg-[#1A1D23] border-2 border-[#2A2F3A] flex-col justify-between`}
+        >
           <div>
-            <div className="px-3.5 py-2.5 bg-[#121316] border-b border-[#2A2F3A] flex items-center justify-between">
+            <div className="px-3 py-2 bg-[#121316] border-b border-[#2A2F3A] flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Activity className="w-4 h-4 text-[#10B981]" />
+                <Activity className="w-3.5 h-3.5 text-[#10B981]" />
                 <h3 className="font-display text-sm font-bold uppercase tracking-wider text-white">
-                  VOLATILE PACE MARGINS (DELTA &lt;= 1.5)
+                  VOLATILE PACE (DELTA &lt;= 1.5)
                 </h3>
               </div>
               <span className="font-mono text-[10px] text-[#9CA3AF] tabular-nums">
@@ -177,8 +193,8 @@ export function SwingRadarSection({ enrichedTeams, onQuickFilter }) {
               </span>
             </div>
 
-            <div className="p-3">
-              <div className="max-h-[290px] overflow-y-auto divide-y divide-[#2A2F3A] border border-[#2A2F3A] bg-[#121316]">
+            <div className="p-2.5">
+              <div className="max-h-[220px] sm:max-h-[260px] overflow-y-auto divide-y divide-[#2A2F3A] border border-[#2A2F3A] bg-[#121316]">
                 {volatileTeams.map((team) => {
                   const isOver = team.projectedWins > team.line;
                   const deltaStr =
@@ -189,9 +205,9 @@ export function SwingRadarSection({ enrichedTeams, onQuickFilter }) {
                   return (
                     <div
                       key={team.team}
-                      className="px-3 py-2 flex items-center justify-between gap-2 hover:bg-[#1A1D23] transition-colors"
+                      className="px-2.5 py-1.5 flex items-center justify-between gap-2 hover:bg-[#1A1D23] transition-colors"
                     >
-                      <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="flex items-center gap-2 min-w-0">
                         <TeamLogo
                           team={team.team}
                           abbr={team.abbr}
@@ -199,32 +215,20 @@ export function SwingRadarSection({ enrichedTeams, onQuickFilter }) {
                           fallbackLogoUrl={team.fallbackLogoUrl}
                           size="w-5 h-5"
                         />
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-mono text-xs font-bold text-white">
-                              {team.abbr}
-                            </span>
-                            <span className="text-xs text-[#9CA3AF] truncate">
-                              {team.team}
-                            </span>
-                          </div>
-                          <div className="font-mono text-[10px] text-[#9CA3AF] tabular-nums">
-                            SPLIT: {team.overCount} OVR / {team.underCount} UND
-                          </div>
-                        </div>
+                        <span className="font-mono text-xs font-bold text-white">
+                          {team.abbr}
+                        </span>
+                        <span className="font-mono text-[10px] text-[#9CA3AF] tabular-nums">
+                          {team.overCount}O/{team.underCount}U
+                        </span>
                       </div>
 
                       <div className="flex items-center gap-2 shrink-0 font-mono tabular-nums text-xs">
-                        <div className="text-right">
-                          <div className="text-[10px] text-[#9CA3AF]">
-                            LINE <strong className="text-white">{team.line.toFixed(1)}</strong>
-                          </div>
-                          <div className="text-white font-bold">
-                            PROJ {team.projectedWins.toFixed(1)}
-                          </div>
-                        </div>
+                        <span className="text-[11px] text-[#9CA3AF]">
+                          {team.projectedWins.toFixed(1)} vs <strong className="text-white">{team.line.toFixed(1)}</strong>
+                        </span>
                         <span
-                          className={`px-1.5 py-0.5 text-[10px] font-bold border min-w-[44px] text-center ${
+                          className={`px-1.5 py-0.5 text-[10px] font-bold border min-w-[42px] text-center ${
                             isOver
                               ? 'bg-[#064E3B] text-[#10B981] border-[#059669]'
                               : 'bg-[#7F1D1D] text-[#EF4444] border-[#DC2626]'
@@ -242,13 +246,17 @@ export function SwingRadarSection({ enrichedTeams, onQuickFilter }) {
         </div>
 
         {/* Panel 3: Unanimous Consensus (10-0) & Lone Wolf (9-1) */}
-        <div className="bg-[#1A1D23] border-2 border-[#2A2F3A] flex flex-col justify-between">
+        <div
+          className={`${
+            mobileTab === 'CONSENSUS' ? 'block' : 'hidden lg:flex'
+          } bg-[#1A1D23] border-2 border-[#2A2F3A] flex-col justify-between`}
+        >
           <div>
-            <div className="px-3.5 py-2.5 bg-[#121316] border-b border-[#2A2F3A] flex items-center justify-between">
+            <div className="px-3 py-2 bg-[#121316] border-b border-[#2A2F3A] flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <ShieldAlert className="w-4 h-4 text-[#9CA3AF]" />
+                <ShieldAlert className="w-3.5 h-3.5 text-[#9CA3AF]" />
                 <h3 className="font-display text-sm font-bold uppercase tracking-wider text-white">
-                  CONSENSUS (10-0) & SOLO OUTLIERS (9-1)
+                  CONSENSUS (10-0) & OUTLIERS (9-1)
                 </h3>
               </div>
               <button
@@ -260,8 +268,8 @@ export function SwingRadarSection({ enrichedTeams, onQuickFilter }) {
               </button>
             </div>
 
-            <div className="p-3">
-              <div className="max-h-[290px] overflow-y-auto divide-y divide-[#2A2F3A] border border-[#2A2F3A] bg-[#121316]">
+            <div className="p-2.5">
+              <div className="max-h-[220px] sm:max-h-[260px] overflow-y-auto divide-y divide-[#2A2F3A] border border-[#2A2F3A] bg-[#121316]">
                 {consensusAndSoloTeams.map((team) => {
                   const consensusSide = team.overPct >= 90 ? 'Over' : 'Under';
                   const consensusAhead = team.currentPaceOutcome === consensusSide;
@@ -269,9 +277,9 @@ export function SwingRadarSection({ enrichedTeams, onQuickFilter }) {
                   return (
                     <div
                       key={team.team}
-                      className="px-3 py-2 flex items-center justify-between gap-2 hover:bg-[#1A1D23] transition-colors"
+                      className="px-2.5 py-1.5 flex items-center justify-between gap-2 hover:bg-[#1A1D23] transition-colors"
                     >
-                      <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="flex items-center gap-2 min-w-0">
                         <TeamLogo
                           team={team.team}
                           abbr={team.abbr}
@@ -279,49 +287,24 @@ export function SwingRadarSection({ enrichedTeams, onQuickFilter }) {
                           fallbackLogoUrl={team.fallbackLogoUrl}
                           size="w-5 h-5"
                         />
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-mono text-xs font-bold text-white">
-                              {team.abbr}
-                            </span>
-                            <span className="font-mono text-[10px] px-1.5 py-0.2 bg-[#1A1D23] border border-[#2A2F3A] text-[#F3F4F6]">
-                              {team.isUnanimous
-                                ? `10-0 ${consensusSide === 'Over' ? 'OVR' : 'UND'}`
-                                : `9-1 ${consensusSide === 'Over' ? 'OVR' : 'UND'}`}
-                            </span>
-                          </div>
-                          <div className="font-mono text-[10px] text-[#9CA3AF] truncate mt-0.5">
-                            {team.isUnanimous ? (
-                              'FULL FIELD CONSENSUS'
-                            ) : (
-                              <span>
-                                OUTLIER:{' '}
-                                <strong className="text-[#D97706]">
-                                  {team.loneWolf.toUpperCase()} ({team.picks[team.loneWolf] === 'Over' ? 'OVR' : 'UND'})
-                                </strong>
-                              </span>
-                            )}
-                          </div>
-                        </div>
+                        <span className="font-mono text-xs font-bold text-white">
+                          {team.abbr}
+                        </span>
+                        <span className="font-mono text-[10px] px-1 py-0.2 bg-[#1A1D23] border border-[#2A2F3A] text-[#F3F4F6]">
+                          {team.isUnanimous
+                            ? `10-0 ${consensusSide === 'Over' ? 'OVR' : 'UND'}`
+                            : `SOLO: ${team.loneWolf.toUpperCase()}`}
+                        </span>
                       </div>
 
-                      <div className="text-right font-mono tabular-nums shrink-0">
-                        <div className="text-xs font-bold text-white">
-                          {team.projectedWins.toFixed(1)} <span className="text-[#9CA3AF]">/ {team.line.toFixed(1)}</span>
-                        </div>
-                        <div
-                          className={`text-[10px] font-bold ${
+                      <div className="text-right font-mono tabular-nums shrink-0 text-[11px]">
+                        <span
+                          className={`font-bold ${
                             consensusAhead ? 'text-[#10B981]' : 'text-[#EF4444]'
                           }`}
                         >
-                          {team.isUnanimous
-                            ? consensusAhead
-                              ? 'FIELD ON PACE'
-                              : 'FIELD TRAILING'
-                            : consensusAhead
-                            ? 'MAJORITY AHEAD'
-                            : `${team.loneWolf.toUpperCase()} AHEAD`}
-                        </div>
+                          {team.projectedWins.toFixed(1)} / {team.line.toFixed(1)}
+                        </span>
                       </div>
                     </div>
                   );

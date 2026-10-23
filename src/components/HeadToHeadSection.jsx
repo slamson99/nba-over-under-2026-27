@@ -73,68 +73,61 @@ export function HeadToHeadSection({ enrichedTeams, leaderboard }) {
   const statsB = statsMap[playerB];
 
   return (
-    <section className="space-y-3">
+    <section className="space-y-2.5">
       {/* Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b-2 border-[#2A2F3A] pb-2">
-        <div className="flex items-center gap-3">
-          <div className="w-1.5 h-6 bg-[#1D428A]" />
-          <div>
-            <div className="flex items-center gap-2.5">
-              <h2 className="font-display text-xl sm:text-2xl font-bold uppercase tracking-wider text-white">
-                04 // HEAD-TO-HEAD DIFFERENTIAL MATRIX
-              </h2>
-              <span className="font-mono text-[11px] uppercase px-2 py-0.5 bg-[#1A1D23] border border-[#2A2F3A] text-[#D97706] tabular-nums">
-                {comparison.differentialTeams.length} DIVERGENT PICKS
-              </span>
-            </div>
-            <p className="text-xs text-[#9CA3AF] font-mono">
-              SELECT ANY TWO CONTESTANTS TO ISOLATE THE EXACT FRANCHISES WHERE THEIR PICKS OPPOSE
-            </p>
-          </div>
+      <div className="flex items-center justify-between gap-2 border-b-2 border-[#2A2F3A] pb-1.5">
+        <div className="flex items-center gap-2.5">
+          <div className="w-1.5 h-5 bg-[#1D428A]" />
+          <h2 className="font-display text-lg sm:text-2xl font-bold uppercase tracking-wider text-white">
+            04 // HEAD-TO-HEAD
+          </h2>
+          <span className="font-mono text-[10px] sm:text-[11px] uppercase px-2 py-0.5 bg-[#1A1D23] border border-[#2A2F3A] text-[#D97706] tabular-nums">
+            {comparison.differentialTeams.length} DIFFS
+          </span>
         </div>
 
         {/* Toggle Divergent vs All 30 */}
-        <div className="flex items-center bg-[#1A1D23] border-2 border-[#2A2F3A] self-start sm:self-auto font-mono text-[11px]">
+        <div className="flex items-center bg-[#1A1D23] border border-[#2A2F3A] font-mono text-[10px] sm:text-[11px]">
           <button
             onClick={() => setShowMode('DIFFERENTIALS')}
-            className={`px-3 py-1.5 font-bold uppercase transition-colors ${
+            className={`px-2.5 py-1 font-bold uppercase transition-colors ${
               showMode === 'DIFFERENTIALS'
                 ? 'bg-[#D97706] text-[#121316]'
                 : 'text-[#9CA3AF] hover:text-white'
             }`}
           >
-            DIVERGENT ONLY ({comparison.differentialTeams.length})
+            DIFFS ({comparison.differentialTeams.length})
           </button>
           <button
             onClick={() => setShowMode('ALL')}
-            className={`px-3 py-1.5 font-bold uppercase border-l border-[#2A2F3A] transition-colors ${
+            className={`px-2.5 py-1 font-bold uppercase border-l border-[#2A2F3A] transition-colors ${
               showMode === 'ALL'
                 ? 'bg-[#D97706] text-[#121316]'
                 : 'text-[#9CA3AF] hover:text-white'
             }`}
           >
-            ALL 30 TEAMS
+            ALL 30
           </button>
         </div>
       </div>
 
-      {/* Matchup Control Deck */}
-      <div className="bg-[#1A1D23] border-2 border-[#2A2F3A] p-4 space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-11 gap-4 items-center">
+      {/* Matchup Control Deck — Compact 2-Column on Mobile */}
+      <div className="bg-[#1A1D23] border-2 border-[#2A2F3A] p-3 sm:p-4 space-y-3 sm:space-y-4">
+        <div className="grid grid-cols-2 md:grid-cols-11 gap-2.5 sm:gap-4 items-center">
           {/* Player A Selector Panel */}
-          <div className="md:col-span-4 bg-[#121316] border-2 border-[#2A2F3A] p-3.5">
-            <div className="flex items-center justify-between font-mono text-[10px] uppercase text-[#9CA3AF] mb-2">
-              <span>CONTESTANT ALPHA</span>
+          <div className="col-span-1 md:col-span-4 bg-[#121316] border border-[#2A2F3A] p-2.5 sm:p-3.5">
+            <div className="flex items-center justify-between font-mono text-[9px] sm:text-[10px] uppercase text-[#9CA3AF] mb-1.5">
+              <span>PLAYER 1</span>
               {statsA && (
                 <span className="text-white font-bold tabular-nums">
-                  RANK {statsA.rankFormatted} ({statsA.projectedCorrect}/30)
+                  #{statsA.rankFormatted} ({statsA.projectedCorrect}/30)
                 </span>
               )}
             </div>
             <select
               value={playerA}
               onChange={(e) => setPlayerA(e.target.value)}
-              className="w-full bg-[#1A1D23] border-2 border-[#2A2F3A] focus:border-[#D97706] px-3 py-2 font-display text-lg font-bold uppercase tracking-wider text-white focus:outline-none"
+              className="w-full bg-[#1A1D23] border border-[#2A2F3A] focus:border-[#D97706] px-2.5 py-1.5 font-display text-base sm:text-lg font-bold uppercase tracking-wider text-white focus:outline-none"
             >
               {CONTESTANTS.map((p) => (
                 <option key={p} value={p}>
@@ -143,59 +136,35 @@ export function HeadToHeadSection({ enrichedTeams, leaderboard }) {
               ))}
             </select>
 
-            <div className="grid grid-cols-3 divide-x divide-[#2A2F3A] border-t border-[#2A2F3A] mt-3 pt-2.5 text-center font-mono tabular-nums">
-              <div>
-                <div className="text-[9px] text-[#9CA3AF]">OVERALL</div>
-                <div className="text-xs font-bold text-white">{statsA?.projectedCorrect || 0}-
-                  {statsA?.projectedWrong || 0}</div>
-              </div>
-              <div>
-                <div className="text-[9px] text-[#9CA3AF]">H2H SWING LEAD</div>
-                <div className="text-xs font-bold text-[#10B981]">
-                  {comparison.aDiffAdvantage} / {comparison.differentialTeams.length}
-                </div>
-              </div>
-              <div>
-                <div className="text-[9px] text-[#9CA3AF]">OVR / UND</div>
-                <div className="text-xs font-bold text-[#F3F4F6]">
-                  {statsA?.overPicksCount} / {statsA?.underPicksCount}
-                </div>
-              </div>
+            <div className="flex items-center justify-between border-t border-[#2A2F3A] mt-2 pt-1.5 font-mono text-[10px] tabular-nums">
+              <span className="text-[#9CA3AF]">H2H LEAD:</span>
+              <span className="font-bold text-[#10B981]">
+                {comparison.aDiffAdvantage} / {comparison.differentialTeams.length}
+              </span>
             </div>
           </div>
 
           {/* Center Telemetry Summary */}
-          <div className="md:col-span-3 flex flex-col items-center justify-center text-center font-mono">
-            <button
-              onClick={() => {
-                setPlayerA(playerB);
-                setPlayerB(playerA);
-              }}
-              className="px-3 py-1.5 bg-[#121316] border-2 border-[#2A2F3A] hover:border-[#D97706] text-xs font-bold uppercase text-white flex items-center gap-1.5 transition-colors mb-2"
-              title="Swap Contestants"
-            >
-              <ArrowLeftRight className="w-3.5 h-3.5 text-[#D97706]" />
-              <span>SWAP MATCHUP</span>
-            </button>
-
-            <div className="text-[11px] uppercase text-[#9CA3AF] tabular-nums">
-              SLATE OVERLAP: <strong className="text-white">{comparison.similarityPct}%</strong> ({comparison.sharedTeams.length}/30)
-            </div>
-            <div className="text-[11px] uppercase text-[#9CA3AF] tabular-nums mt-0.5">
-              DECIDING GAMES: <strong className="text-[#D97706]">{comparison.differentialTeams.length}</strong>
+          <div className="col-span-2 md:col-span-3 order-3 md:order-none flex flex-col items-center justify-center text-center font-mono pt-1 md:pt-0">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => {
+                  setPlayerA(playerB);
+                  setPlayerB(playerA);
+                }}
+                className="px-2.5 py-1 bg-[#121316] border border-[#2A2F3A] hover:border-[#D97706] text-[10px] font-bold uppercase text-white flex items-center gap-1 transition-colors"
+              >
+                <ArrowLeftRight className="w-3 h-3 text-[#D97706]" />
+                <span>SWAP</span>
+              </button>
+              <span className="text-[10px] uppercase text-[#9CA3AF] tabular-nums">
+                OVERLAP: <strong className="text-white">{comparison.similarityPct}%</strong>
+              </span>
             </div>
 
             {comparison.differentialTeams.length > 0 && (
-              <div className="w-full max-w-[210px] mt-2.5">
-                <div className="flex justify-between text-[10px] font-bold mb-1 tabular-nums">
-                  <span className="text-white">
-                    {playerA.toUpperCase()}: {comparison.aDiffAdvantage}
-                  </span>
-                  <span className="text-[#D97706]">
-                    {playerB.toUpperCase()}: {comparison.bDiffAdvantage}
-                  </span>
-                </div>
-                <div className="w-full h-2 bg-[#121316] border border-[#2A2F3A] flex overflow-hidden">
+              <div className="w-full max-w-[240px] mt-2">
+                <div className="w-full h-1.5 bg-[#121316] border border-[#2A2F3A] flex overflow-hidden">
                   <div
                     style={{
                       width: `${
@@ -218,19 +187,19 @@ export function HeadToHeadSection({ enrichedTeams, leaderboard }) {
           </div>
 
           {/* Player B Selector Panel */}
-          <div className="md:col-span-4 bg-[#121316] border-2 border-[#2A2F3A] p-3.5">
-            <div className="flex items-center justify-between font-mono text-[10px] uppercase text-[#9CA3AF] mb-2">
-              <span>CONTESTANT BRAVO</span>
+          <div className="col-span-1 md:col-span-4 bg-[#121316] border border-[#2A2F3A] p-2.5 sm:p-3.5">
+            <div className="flex items-center justify-between font-mono text-[9px] sm:text-[10px] uppercase text-[#9CA3AF] mb-1.5">
+              <span>PLAYER 2</span>
               {statsB && (
                 <span className="text-white font-bold tabular-nums">
-                  RANK {statsB.rankFormatted} ({statsB.projectedCorrect}/30)
+                  #{statsB.rankFormatted} ({statsB.projectedCorrect}/30)
                 </span>
               )}
             </div>
             <select
               value={playerB}
               onChange={(e) => setPlayerB(e.target.value)}
-              className="w-full bg-[#1A1D23] border-2 border-[#2A2F3A] focus:border-[#D97706] px-3 py-2 font-display text-lg font-bold uppercase tracking-wider text-white focus:outline-none"
+              className="w-full bg-[#1A1D23] border border-[#2A2F3A] focus:border-[#D97706] px-2.5 py-1.5 font-display text-base sm:text-lg font-bold uppercase tracking-wider text-white focus:outline-none"
             >
               {CONTESTANTS.map((p) => (
                 <option key={p} value={p}>
@@ -239,36 +208,23 @@ export function HeadToHeadSection({ enrichedTeams, leaderboard }) {
               ))}
             </select>
 
-            <div className="grid grid-cols-3 divide-x divide-[#2A2F3A] border-t border-[#2A2F3A] mt-3 pt-2.5 text-center font-mono tabular-nums">
-              <div>
-                <div className="text-[9px] text-[#9CA3AF]">OVERALL</div>
-                <div className="text-xs font-bold text-white">{statsB?.projectedCorrect || 0}-
-                  {statsB?.projectedWrong || 0}</div>
-              </div>
-              <div>
-                <div className="text-[9px] text-[#9CA3AF]">H2H SWING LEAD</div>
-                <div className="text-xs font-bold text-[#10B981]">
-                  {comparison.bDiffAdvantage} / {comparison.differentialTeams.length}
-                </div>
-              </div>
-              <div>
-                <div className="text-[9px] text-[#9CA3AF]">OVR / UND</div>
-                <div className="text-xs font-bold text-[#F3F4F6]">
-                  {statsB?.overPicksCount} / {statsB?.underPicksCount}
-                </div>
-              </div>
+            <div className="flex items-center justify-between border-t border-[#2A2F3A] mt-2 pt-1.5 font-mono text-[10px] tabular-nums">
+              <span className="text-[#9CA3AF]">H2H LEAD:</span>
+              <span className="font-bold text-[#10B981]">
+                {comparison.bDiffAdvantage} / {comparison.differentialTeams.length}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Differential Matrix Table / Cards */}
-        <div className="border-t-2 border-[#2A2F3A] pt-4">
+        {/* Differential Matrix Cards */}
+        <div className="border-t-2 border-[#2A2F3A] pt-3">
           {playerA === playerB ? (
-            <div className="py-8 text-center font-mono text-xs uppercase text-[#9CA3AF]">
-              SELECT TWO DISTINCT CONTESTANTS TO GENERATE DIFFERENTIAL MATRIX
+            <div className="py-6 text-center font-mono text-xs uppercase text-[#9CA3AF]">
+              SELECT TWO DIFFERENT CONTESTANTS ABOVE
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {displayedTeams.map((team) => {
                 const isDiff = team.pickA !== team.pickB;
                 const aCorrect = team.statusA.isProjectedCorrect;
@@ -281,13 +237,13 @@ export function HeadToHeadSection({ enrichedTeams, leaderboard }) {
                 return (
                   <div
                     key={team.team}
-                    className={`bg-[#121316] border p-3 font-mono tabular-nums ${
+                    className={`bg-[#121316] border p-2.5 font-mono tabular-nums ${
                       isDiff
                         ? 'border-[#2A2F3A] hover:border-[#9CA3AF]'
                         : 'border-[#2A2F3A]/40 opacity-60'
                     }`}
                   >
-                    <div className="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-[#2A2F3A]">
+                    <div className="flex items-center justify-between gap-2 pb-1.5 mb-2 border-b border-[#2A2F3A]">
                       <div className="flex items-center gap-2 min-w-0">
                         <TeamLogo
                           team={team.team}
@@ -297,14 +253,14 @@ export function HeadToHeadSection({ enrichedTeams, leaderboard }) {
                           size="w-5 h-5"
                         />
                         <span className="font-bold text-xs text-[#D97706]">{team.abbr}</span>
-                        <span className="font-sans text-xs font-semibold text-white truncate">
+                        <span className="hidden sm:inline font-sans text-xs font-semibold text-white truncate">
                           {team.team}
                         </span>
                       </div>
 
                       <div className="text-right text-[11px] shrink-0">
-                        <span className="text-[#9CA3AF]">LINE </span>
-                        <strong className="text-white">{team.line.toFixed(1)}</strong>
+                        <span className="text-[#9CA3AF]">L:</span>
+                        <strong className="text-white ml-0.5">{team.line.toFixed(1)}</strong>
                         <span className="mx-1 text-[#2A2F3A]">|</span>
                         <strong
                           className={
@@ -319,18 +275,18 @@ export function HeadToHeadSection({ enrichedTeams, leaderboard }) {
                     </div>
 
                     {/* Side-by-side Pick Cells */}
-                    <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="grid grid-cols-2 gap-1.5 text-xs">
                       <div
-                        className={`px-2.5 py-1.5 border flex items-center justify-between ${
+                        className={`px-2 py-1 border flex items-center justify-between ${
                           aCorrect
                             ? 'bg-[#064E3B]/35 border-[#059669]'
                             : 'bg-[#7F1D1D]/30 border-[#DC2626]'
                         }`}
                       >
-                        <div>
-                          <div className="text-[10px] text-[#9CA3AF] uppercase">
-                            {playerA}
-                          </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] text-[#9CA3AF] uppercase">
+                            {playerA}:
+                          </span>
                           <span
                             className={`text-xs font-bold ${
                               team.pickA === 'Over' ? 'text-[#10B981]' : 'text-[#EF4444]'
@@ -347,16 +303,16 @@ export function HeadToHeadSection({ enrichedTeams, leaderboard }) {
                       </div>
 
                       <div
-                        className={`px-2.5 py-1.5 border flex items-center justify-between ${
+                        className={`px-2 py-1 border flex items-center justify-between ${
                           bCorrect
                             ? 'bg-[#064E3B]/35 border-[#059669]'
                             : 'bg-[#7F1D1D]/30 border-[#DC2626]'
                         }`}
                       >
-                        <div>
-                          <div className="text-[10px] text-[#9CA3AF] uppercase">
-                            {playerB}
-                          </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] text-[#9CA3AF] uppercase">
+                            {playerB}:
+                          </span>
                           <span
                             className={`text-xs font-bold ${
                               team.pickB === 'Over' ? 'text-[#10B981]' : 'text-[#EF4444]'
