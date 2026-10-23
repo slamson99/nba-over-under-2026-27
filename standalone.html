@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NBA REGULAR SEASON OVER / UNDER COMPETITION 2026-27</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            display: ['Barlow Condensed', 'Oswald', 'Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #121316;
+      color: #F3F4F6;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    .tabular-nums { font-variant-numeric: tabular-nums; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #121316; }
+    ::-webkit-scrollbar-thumb { background: #2A2F3A; }
+    ::-webkit-scrollbar-thumb:hover { background: #D97706; }
+  </style>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-[#121316] text-[#F3F4F6] antialiased selection:bg-[#D97706] selection:text-[#121316]">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+
+    const CONTESTANTS = ["Ed", "Cory", "Beardy", "Tank", "Samson", "Bronson", "Tom", "Chode", "Justin", "Jeza"];
+
+    const INITIAL_DATASET = [
+      {"team": "Atlanta Hawks", "line": 43.5, "picks": {"Ed":"Over","Cory":"Under","Beardy":"Over","Tank":"Under","Samson":"Under","Bronson":"Over","Tom":"Under","Chode":"Under","Justin":"Over","Jeza":"Under"}},
+      {"team": "Boston Celtics", "line": 51.5, "picks": {"Ed":"Over","Cory":"Over","Beardy":"Over","Tank":"Over","Samson":"Over","Bronson":"Over","Tom":"Over","Chode":"Over","Justin":"Under","Jeza":"Under"}},
+      {"team": "Brooklyn Nets", "line": 25.5, "picks": {"Ed":"Under","Cory":"Under","Beardy":"Under","Tank":"Under","Samson":"Under","Bronson":"Under","Tom":"Over","Chode":"Under","Justin":"Under","Jeza":"Over"}},
+      {"team": "Charlotte Hornets", "line": 37.5, "picks": {"Ed":"Under","Cory":"Under","Beardy":"Under","Tank":"Under","Samson":"Over","Bronson":"Over","Tom":"Under","Chode":"Over","Justin":"Under","Jeza":"Under"}},
+      {"team": "Chicago Bulls", "line": 29.5, "picks": {"Ed":"Under","Cory":"Under","Beardy":"Over","Tank":"Over","Samson":"Under","Bronson":"Over","Tom":"Under","Chode":"Over","Justin":"Under","Jeza":"Over"}},
+      {"team": "Cleveland Cavaliers", "line": 48.5, "picks": {"Ed":"Over","Cory":"Over","Beardy":"Over","Tank":"Over","Samson":"Under","Bronson":"Under","Tom":"Over","Chode":"Over","Justin":"Over","Jeza":"Over"}},
+      {"team": "Dallas Mavericks", "line": 33.5, "picks": {"Ed":"Under","Cory":"Under","Beardy":"Under","Tank":"Under","Samson":"Under","Bronson":"Over","Tom":"Over","Chode":"Over","Justin":"Under","Jeza":"Under"}},
+      {"team": "Denver Nuggets", "line": 48.5, "picks": {"Ed":"Over","Cory":"Over","Beardy":"Over","Tank":"Over","Samson":"Over","Bronson":"Over","Tom":"Over","Chode":"Over","Justin":"Over","Jeza":"Over"}},
+      {"team": "Detroit Pistons", "line": 48.5, "picks": {"Ed":"Over","Cory":"Under","Beardy":"Over","Tank":"Over","Samson":"Under","Bronson":"Over","Tom":"Over","Chode":"Under","Justin":"Over","Jeza":"Over"}},
+      {"team": "Golden State Warriors", "line": 36.5, "picks": {"Ed":"Over","Cory":"Under","Beardy":"Under","Tank":"Under","Samson":"Over","Bronson":"Over","Tom":"Over","Chode":"Under","Justin":"Under","Jeza":"Under"}},
+      {"team": "Houston Rockets", "line": 48.5, "picks": {"Ed":"Over","Cory":"Under","Beardy":"Over","Tank":"Over","Samson":"Over","Bronson":"Over","Tom":"Over","Chode":"Over","Justin":"Over","Jeza":"Over"}},
+      {"team": "Indiana Pacers", "line": 44.5, "picks": {"Ed":"Over","Cory":"Over","Beardy":"Over","Tank":"Over","Samson":"Over","Bronson":"Over","Tom":"Over","Chode":"Under","Justin":"Over","Jeza":"Under"}},
+      {"team": "Los Angeles Clippers", "line": 27.5, "picks": {"Ed":"Under","Cory":"Under","Beardy":"Under","Tank":"Under","Samson":"Under","Bronson":"Under","Tom":"Under","Chode":"Under","Justin":"Under","Jeza":"Over"}},
+      {"team": "Los Angeles Lakers", "line": 45.5, "picks": {"Ed":"Over","Cory":"Over","Beardy":"Over","Tank":"Over","Samson":"Over","Bronson":"Over","Tom":"Over","Chode":"Over","Justin":"Over","Jeza":"Over"}},
+      {"team": "Memphis Grizzlies", "line": 30.5, "picks": {"Ed":"Under","Cory":"Over","Beardy":"Under","Tank":"Under","Samson":"Over","Bronson":"Under","Tom":"Under","Chode":"Under","Justin":"Under","Jeza":"Under"}},
+      {"team": "Miami Heat", "line": 46.5, "picks": {"Ed":"Over","Cory":"Over","Beardy":"Over","Tank":"Over","Samson":"Under","Bronson":"Under","Tom":"Over","Chode":"Under","Justin":"Over","Jeza":"Under"}},
+      {"team": "Milwaukee Bucks", "line": 25.5, "picks": {"Ed":"Under","Cory":"Under","Beardy":"Under","Tank":"Under","Samson":"Under","Bronson":"Under","Tom":"Under","Chode":"Over","Justin":"Under","Jeza":"Under"}},
+      {"team": "Minnesota Timberwolves", "line": 47.5, "picks": {"Ed":"Over","Cory":"Over","Beardy":"Over","Tank":"Over","Samson":"Over","Bronson":"Over","Tom":"Over","Chode":"Over","Justin":"Over","Jeza":"Over"}},
+      {"team": "New Orleans Pelicans", "line": 28.5, "picks": {"Ed":"Under","Cory":"Under","Beardy":"Under","Tank":"Under","Samson":"Over","Bronson":"Over","Tom":"Under","Chode":"Under","Justin":"Over","Jeza":"Under"}},
+      {"team": "New York Knicks", "line": 51.5, "picks": {"Ed":"Over","Cory":"Under","Beardy":"Under","Tank":"Over","Samson":"Under","Bronson":"Over","Tom":"Over","Chode":"Over","Justin":"Under","Jeza":"Under"}},
+      {"team": "Oklahoma City Thunder", "line": 61.5, "picks": {"Ed":"Over","Cory":"Over","Beardy":"Over","Tank":"Under","Samson":"Over","Bronson":"Under","Tom":"Over","Chode":"Over","Justin":"Over","Jeza":"Over"}},
+      {"team": "Orlando Magic", "line": 43.5, "picks": {"Ed":"Over","Cory":"Over","Beardy":"Under","Tank":"Under","Samson":"Over","Bronson":"Over","Tom":"Under","Chode":"Under","Justin":"Over","Jeza":"Over"}},
+      {"team": "Philadelphia 76ers", "line": 49.5, "picks": {"Ed":"Over","Cory":"Over","Beardy":"Over","Tank":"Over","Samson":"Under","Bronson":"Over","Tom":"Over","Chode":"Over","Justin":"Under","Jeza":"Under"}},
+      {"team": "Phoenix Suns", "line": 38.5, "picks": {"Ed":"Over","Cory":"Under","Beardy":"Under","Tank":"Under","Samson":"Over","Bronson":"Under","Tom":"Over","Chode":"Under","Justin":"Under","Jeza":"Under"}},
+      {"team": "Portland Trail Blazers", "line": 41.5, "picks": {"Ed":"Under","Cory":"Under","Beardy":"Under","Tank":"Under","Samson":"Under","Bronson":"Over","Tom":"Under","Chode":"Under","Justin":"Over","Jeza":"Over"}},
+      {"team": "Sacramento Kings", "line": 20.5, "picks": {"Ed":"Over","Cory":"Under","Beardy":"Under","Tank":"Over","Samson":"Over","Bronson":"Over","Tom":"Over","Chode":"Over","Justin":"Under","Jeza":"Over"}},
+      {"team": "San Antonio Spurs", "line": 60.5, "picks": {"Ed":"Over","Cory":"Over","Beardy":"Over","Tank":"Under","Samson":"Over","Bronson":"Over","Tom":"Over","Chode":"Over","Justin":"Under","Jeza":"Over"}},
+      {"team": "Toronto Raptors", "line": 46.5, "picks": {"Ed":"Over","Cory":"Over","Beardy":"Over","Tank":"Over","Samson":"Over","Bronson":"Over","Tom":"Under","Chode":"Over","Justin":"Over","Jeza":"Under"}},
+      {"team": "Utah Jazz", "line": 37.5, "picks": {"Ed":"Over","Cory":"Under","Beardy":"Over","Tank":"Over","Samson":"Over","Bronson":"Over","Tom":"Over","Chode":"Over","Justin":"Under","Jeza":"Over"}},
+      {"team": "Washington Wizards", "line": 34.5, "picks": {"Ed":"Under","Cory":"Under","Beardy":"Under","Tank":"Over","Samson":"Over","Bronson":"Over","Tom":"Under","Chode":"Under","Justin":"Under","Jeza":"Under"}}
+    ];
+
+    const TEAM_METADATA = {
+      "Atlanta Hawks": { abbr: "ATL", nbaId: 1610612737, espnSlug: "atl", sampleWins: 1, sampleLosses: 0 },
+      "Boston Celtics": { abbr: "BOS", nbaId: 1610612738, espnSlug: "bos", sampleWins: 0, sampleLosses: 1 },
+      "Brooklyn Nets": { abbr: "BKN", nbaId: 1610612751, espnSlug: "bkn", sampleWins: 0, sampleLosses: 1 },
+      "Charlotte Hornets": { abbr: "CHA", nbaId: 1610612766, espnSlug: "cha", sampleWins: 1, sampleLosses: 0 },
+      "Chicago Bulls": { abbr: "CHI", nbaId: 1610612741, espnSlug: "chi", sampleWins: 0, sampleLosses: 1 },
+      "Cleveland Cavaliers": { abbr: "CLE", nbaId: 1610612739, espnSlug: "cle", sampleWins: 1, sampleLosses: 0 },
+      "Dallas Mavericks": { abbr: "DAL", nbaId: 1610612742, espnSlug: "dal", sampleWins: 1, sampleLosses: 0 },
+      "Denver Nuggets": { abbr: "DEN", nbaId: 1610612743, espnSlug: "den", sampleWins: 0, sampleLosses: 1 },
+      "Detroit Pistons": { abbr: "DET", nbaId: 1610612765, espnSlug: "det", sampleWins: 0, sampleLosses: 1 },
+      "Golden State Warriors": { abbr: "GSW", nbaId: 1610612744, espnSlug: "gs", sampleWins: 1, sampleLosses: 0 },
+      "Houston Rockets": { abbr: "HOU", nbaId: 1610612745, espnSlug: "hou", sampleWins: 0, sampleLosses: 1 },
+      "Indiana Pacers": { abbr: "IND", nbaId: 1610612754, espnSlug: "ind", sampleWins: 1, sampleLosses: 0 },
+      "Los Angeles Clippers": { abbr: "LAC", nbaId: 1610612746, espnSlug: "lac", sampleWins: 0, sampleLosses: 1 },
+      "Los Angeles Lakers": { abbr: "LAL", nbaId: 1610612747, espnSlug: "lal", sampleWins: 1, sampleLosses: 0 },
+      "Memphis Grizzlies": { abbr: "MEM", nbaId: 1610612763, espnSlug: "mem", sampleWins: 1, sampleLosses: 0 },
+      "Miami Heat": { abbr: "MIA", nbaId: 1610612748, espnSlug: "mia", sampleWins: 0, sampleLosses: 1 },
+      "Milwaukee Bucks": { abbr: "MIL", nbaId: 1610612749, espnSlug: "mil", sampleWins: 1, sampleLosses: 0 },
+      "Minnesota Timberwolves": { abbr: "MIN", nbaId: 1610612750, espnSlug: "min", sampleWins: 1, sampleLosses: 1 },
+      "New Orleans Pelicans": { abbr: "NOP", nbaId: 1610612740, espnSlug: "no", sampleWins: 1, sampleLosses: 0 },
+      "New York Knicks": { abbr: "NYK", nbaId: 1610612752, espnSlug: "ny", sampleWins: 0, sampleLosses: 1 },
+      "Oklahoma City Thunder": { abbr: "OKC", nbaId: 1610612760, espnSlug: "okc", sampleWins: 1, sampleLosses: 0 },
+      "Orlando Magic": { abbr: "ORL", nbaId: 1610612753, espnSlug: "orl", sampleWins: 1, sampleLosses: 0 },
+      "Philadelphia 76ers": { abbr: "PHI", nbaId: 1610612755, espnSlug: "phi", sampleWins: 0, sampleLosses: 1 },
+      "Phoenix Suns": { abbr: "PHX", nbaId: 1610612756, espnSlug: "phx", sampleWins: 1, sampleLosses: 0 },
+      "Portland Trail Blazers": { abbr: "POR", nbaId: 1610612757, espnSlug: "por", sampleWins: 0, sampleLosses: 1 },
+      "Sacramento Kings": { abbr: "SAC", nbaId: 1610612758, espnSlug: "sac", sampleWins: 0, sampleLosses: 1 },
+      "San Antonio Spurs": { abbr: "SAS", nbaId: 1610612759, espnSlug: "sa", sampleWins: 0, sampleLosses: 1 },
+      "Toronto Raptors": { abbr: "TOR", nbaId: 1610612761, espnSlug: "tor", sampleWins: 0, sampleLosses: 1 },
+      "Utah Jazz": { abbr: "UTA", nbaId: 1610612762, espnSlug: "utah", sampleWins: 0, sampleLosses: 1 },
+      "Washington Wizards": { abbr: "WAS", nbaId: 1610612764, espnSlug: "wsh", sampleWins: 0, sampleLosses: 1 }
+    };
+
+    function AppStandalone() {
+      const [daysElapsed, setDaysElapsed] = useState(2);
+      const [selectedPlayer, setSelectedPlayer] = useState(null);
+      const [activeFilter, setActiveFilter] = useState('ALL');
+      const [playerA, setPlayerA] = useState('Bronson');
+      const [playerB, setPlayerB] = useState('Samson');
+
+      const pctRemaining = (172 - daysElapsed) / 172;
+
+      const enrichedTeams = useMemo(() => {
+        return INITIAL_DATASET.map(item => {
+          const meta = TEAM_METADATA[item.team];
+          const wins = meta.sampleWins;
+          const losses = meta.sampleLosses;
+          const projectedWins = Number((wins + pctRemaining * item.line).toFixed(1));
+          const paceDiff = Number((projectedWins - item.line).toFixed(1));
+          const currentPaceOutcome = projectedWins > item.line ? 'Over' : 'Under';
+
+          let overCount = 0, underCount = 0;
+          CONTESTANTS.forEach(p => item.picks[p] === 'Over' ? overCount++ : underCount++);
+          const overPct = Math.round((overCount / 10) * 100);
+          const underPct = Math.round((underCount / 10) * 100);
+
+          const playerStatuses = {};
+          CONTESTANTS.forEach(p => {
+            const pick = item.picks[p];
+            playerStatuses[p] = {
+              pick,
+              code: pick === 'Over' ? 'OVR' : 'UND',
+              isProjectedCorrect: currentPaceOutcome === pick
+            };
+          });
+
+          return {
+            ...item,
+            abbr: meta.abbr,
+            logoUrl: `https://cdn.nba.com/logos/nba/${meta.nbaId}/global/L/logo.svg`,
+            fallbackLogoUrl: `https://a.espncdn.com/i/teamlogos/nba/500/${meta.espnSlug}.png`,
+            wins, losses, projectedWins, paceDiff, currentPaceOutcome,
+            overPct, underPct,
+            is5050: overPct === 50,
+            isContested: Math.max(overPct, underPct) <= 60,
+            isVolatilePace: Math.abs(paceDiff) <= 1.5,
+            isUnanimous: Math.max(overPct, underPct) === 100,
+            playerStatuses
+          };
+        });
+      }, [pctRemaining]);
+
+      const leaderboard = useMemo(() => {
+        const list = CONTESTANTS.map(player => {
+          let projectedCorrect = 0;
+          enrichedTeams.forEach(t => {
+            if (t.playerStatuses[player].isProjectedCorrect) projectedCorrect++;
+          });
+          return { player, projectedCorrect, projectedWrong: 30 - projectedCorrect };
+        });
+        list.sort((a, b) => b.projectedCorrect - a.projectedCorrect || a.player.localeCompare(b.player));
+        const top = list[0].projectedCorrect;
+        let rk = 1;
+        list.forEach((entry, idx) => {
+          if (idx > 0 && entry.projectedCorrect < list[idx - 1].projectedCorrect) rk = idx + 1;
+          entry.rankFormatted = String(rk).padStart(2, '0');
+          const diff = top - entry.projectedCorrect;
+          entry.deficitFormatted = diff === 0 ? '-' : `-${diff.toFixed(1)}`;
+        });
+        return list;
+      }, [enrichedTeams]);
+
+      const filteredTeams = useMemo(() => {
+        return enrichedTeams.filter(t => {
+          if (activeFilter === 'CONTESTED') return t.isContested;
+          if (activeFilter === 'VOLATILE') return t.isVolatilePace;
+          if (activeFilter === 'UNANIMOUS') return t.isUnanimous;
+          return true;
+        });
+      }, [enrichedTeams, activeFilter]);
+
+      return (
+        <div className="min-h-screen bg-[#121316] text-[#F3F4F6] pb-16 tabular-nums">
+          <div className="h-1 w-full bg-[#D97706]" />
+          <header className="sticky top-0 z-50 bg-[#121316] border-b-2 border-[#2A2F3A] px-6 py-3">
+            <div className="max-w-[1640px] mx-auto flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h1 className="font-display text-2xl font-extrabold uppercase tracking-wider text-white">
+                  NBA REGULAR SEASON OVER / UNDER COMPETITION 2026-27
+                </h1>
+                <div className="font-mono text-xs text-[#9CA3AF]">
+                  DAY {String(daysElapsed).padStart(3, '0')} / 172 | TIME-DECAY WEIGHT: {(pctRemaining * 100).toFixed(1)}% PRESEASON LINE
+                </div>
+              </div>
+              <div className="flex items-center gap-2 font-mono text-xs bg-[#1A1D23] border-2 border-[#2A2F3A] px-3 py-1.5">
+                <span>STEP DAY:</span>
+                <button onClick={() => setDaysElapsed(d => Math.max(0, d - 1))} className="px-2 py-0.5 bg-[#121316] border border-[#2A2F3A]">-</button>
+                <span className="font-bold text-[#D97706]">{String(daysElapsed).padStart(3, '0')}</span>
+                <button onClick={() => setDaysElapsed(d => Math.min(172, d + 1))} className="px-2 py-0.5 bg-[#121316] border border-[#2A2F3A]">+</button>
+              </div>
+            </div>
+          </header>
+
+          <main className="max-w-[1640px] mx-auto px-6 py-6 space-y-8">
+            <section className="space-y-3">
+              <h2 className="font-display text-xl font-bold uppercase tracking-wider border-b-2 border-[#2A2F3A] pb-1.5">
+                01 // THE PODIUM STANDINGS
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+                {leaderboard.map(entry => (
+                  <div key={entry.player} onClick={() => setSelectedPlayer(selectedPlayer === entry.player ? null : entry.player)}
+                    className={`bg-[#1A1D23] border-2 p-3 cursor-pointer ${selectedPlayer === entry.player ? 'border-[#D97706]' : 'border-[#2A2F3A]'}`}>
+                    <div className="flex justify-between items-center font-mono text-xs border-b border-[#2A2F3A] pb-1.5 mb-2">
+                      <span className="font-bold text-[#D97706]">{entry.rankFormatted} // {entry.player.toUpperCase()}</span>
+                      <span className="text-[#9CA3AF]">{entry.deficitFormatted}</span>
+                    </div>
+                    <div className="font-display text-3xl font-extrabold">{entry.projectedCorrect} <span className="font-mono text-xs text-[#9CA3AF]">/ 30</span></div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="space-y-3">
+              <div className="flex items-center justify-between border-b-2 border-[#2A2F3A] pb-1.5">
+                <h2 className="font-display text-xl font-bold uppercase tracking-wider">02 // THE MASTER LEDGER TABLE</h2>
+                <div className="flex gap-1.5 font-mono text-xs">
+                  {['ALL', 'CONTESTED', 'VOLATILE', 'UNANIMOUS'].map(f => (
+                    <button key={f} onClick={() => setActiveFilter(f)}
+                      className={`px-2.5 py-1 border ${activeFilter === f ? 'bg-[#D97706] text-[#121316] border-[#D97706] font-bold' : 'bg-[#1A1D23] text-[#9CA3AF] border-[#2A2F3A]'}`}>
+                      {f}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-[#1A1D23] border-2 border-[#2A2F3A] overflow-x-auto">
+                <table className="w-full border-collapse text-left font-mono text-xs">
+                  <thead className="bg-[#121316] border-b-2 border-[#2A2F3A] font-display uppercase text-[#9CA3AF]">
+                    <tr>
+                      <th className="p-2.5 sticky left-0 bg-[#121316] border-r-2 border-[#2A2F3A]">TEAM</th>
+                      <th className="p-2.5 text-center border-r border-[#2A2F3A]">LINE</th>
+                      <th className="p-2.5 text-center border-r border-[#2A2F3A]">ACTUAL</th>
+                      <th className="p-2.5 text-center border-r border-[#2A2F3A]">PROJECTION</th>
+                      <th className="p-2.5 text-center border-r-2 border-[#2A2F3A]">FIELD CONSENSUS</th>
+                      {CONTESTANTS.map(p => <th key={p} className="p-2.5 text-center border-r border-[#2A2F3A]">{p.toUpperCase()}</th>)}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#2A2F3A]">
+                    {filteredTeams.map(t => (
+                      <tr key={t.team} className="h-10 hover:bg-[#21252D]">
+                        <td className="px-3 py-1.5 sticky left-0 bg-[#1A1D23] border-r-2 border-[#2A2F3A] flex items-center gap-2">
+                          <img src={t.logoUrl} onError={e => { e.target.src = t.fallbackLogoUrl; }} className="w-5 h-5 object-contain" />
+                          <span className="font-bold text-[#D97706]">{t.abbr}</span>
+                          <span className="font-sans text-white font-semibold">{t.team}</span>
+                        </td>
+                        <td className="px-2.5 py-1.5 text-center font-bold border-r border-[#2A2F3A]">{t.line.toFixed(1)}</td>
+                        <td className="px-2.5 py-1.5 text-center border-r border-[#2A2F3A]">{t.wins} - {t.losses}</td>
+                        <td className="px-2.5 py-1.5 text-center border-r border-[#2A2F3A]">
+                          <span className={t.projectedWins > t.line ? 'text-[#10B981] font-bold' : 'text-[#EF4444] font-bold'}>
+                            {t.projectedWins.toFixed(1)} ({t.paceDiff > 0 ? `+${t.paceDiff.toFixed(1)}` : t.paceDiff.toFixed(1)})
+                          </span>
+                        </td>
+                        <td className="px-3 py-1.5 text-center border-r-2 border-[#2A2F3A]">{t.overPct}% OVR / {t.underPct}% UND</td>
+                        {CONTESTANTS.map(p => {
+                          const st = t.playerStatuses[p];
+                          const isOver = st.pick === 'Over';
+                          return (
+                            <td key={p} className={`px-1.5 py-1 text-center border-r border-[#2A2F3A] ${st.isProjectedCorrect ? 'bg-[#064E3B]/35' : 'bg-[#7F1D1D]/30'}`}>
+                              <span className={`px-2 py-0.5 text-[10px] font-bold border ${isOver ? 'bg-[#064E3B] text-[#10B981] border-[#059669]' : 'bg-[#7F1D1D] text-[#EF4444] border-[#DC2626]'}`}>
+                                {st.code}
+                              </span>
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </main>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<AppStandalone />);
+  </script>
+</body>
+</html>
