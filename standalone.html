@@ -112,20 +112,68 @@
       "Washington Wizards": { abbr: "WAS", nbaId: 1610612764, espnSlug: "wsh", sampleWins: 0, sampleLosses: 1 }
     };
 
+    function getLiveDaysElapsed() {
+      const startUTC = Date.UTC(2026, 9, 21); // 2026-10-21
+      const now = new Date();
+      const todayUTC = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+      const diffDays = Math.round((todayUTC - startUTC) / (1000 * 60 * 60 * 24));
+      return Math.max(0, Math.min(172, diffDays));
+    }
+
+    const ESPN_ABBR_TO_TEAM = {
+      ATL: "Atlanta Hawks", BOS: "Boston Celtics", BKN: "Brooklyn Nets", CHA: "Charlotte Hornets",
+      CHI: "Chicago Bulls", CLE: "Cleveland Cavaliers", DAL: "Dallas Mavericks", DEN: "Denver Nuggets",
+      DET: "Detroit Pistons", GS: "Golden State Warriors", GSW: "Golden State Warriors", HOU: "Houston Rockets",
+      IND: "Indiana Pacers", LAC: "Los Angeles Clippers", LAL: "Los Angeles Lakers", MEM: "Memphis Grizzlies",
+      MIA: "Miami Heat", MIL: "Milwaukee Bucks", MIN: "Minnesota Timberwolves", NO: "New Orleans Pelicans",
+      NOP: "New Orleans Pelicans", NY: "New York Knicks", NYK: "New York Knicks", OKC: "Oklahoma City Thunder",
+      ORL: "Orlando Magic", PHI: "Philadelphia 76ers", PHX: "Phoenix Suns", POR: "Portland Trail Blazers",
+      SAC: "Sacramento Kings", SA: "San Antonio Spurs", SAS: "San Antonio Spurs", TOR: "Toronto Raptors",
+      UTAH: "Utah Jazz", UTA: "Utah Jazz", WSH: "Washington Wizards", WAS: "Washington Wizards"
+    };
+
     function AppStandalone() {
-      const [daysElapsed, setDaysElapsed] = useState(2);
+      const [daysElapsed, setDaysElapsed] = useState(() => getLiveDaysElapsed());
+      const [standingsMap, setStandingsMap] = useState({});
       const [selectedPlayer, setSelectedPlayer] = useState(null);
       const [activeFilter, setActiveFilter] = useState('ALL');
       const [playerA, setPlayerA] = useState('Bronson');
       const [playerB, setPlayerB] = useState('Samson');
+
+      useEffect(() => {
+        fetch(`https://site.api.espn.com/apis/v2/sports/basketball/nba/standings?_t=${Date.now()}`, { cache: 'no-store' })
+          .then(r => r.json())
+          .then(data => {
+            const parsed = {};
+            const extract = (node) => {
+              if (node?.standings?.entries) {
+                for (const entry of node.standings.entries) {
+                  const abbr = (entry.team?.abbreviation || '').toUpperCase();
+                  const matched = ESPN_ABBR_TO_TEAM[abbr] || entry.team?.displayName;
+                  if (matched) {
+                    const stats = entry.stats || [];
+                    const w = Number(stats.find(s => s.name === 'wins')?.value ?? 0);
+                    const l = Number(stats.find(s => s.name === 'losses')?.value ?? 0);
+                    parsed[matched] = { wins: w, losses: l };
+                  }
+                }
+              }
+              if (Array.isArray(node?.children)) node.children.forEach(extract);
+            };
+            extract(data);
+            setStandingsMap(parsed);
+          })
+          .catch(() => {});
+      }, []);
 
       const pctRemaining = (172 - daysElapsed) / 172;
 
       const enrichedTeams = useMemo(() => {
         return INITIAL_DATASET.map(item => {
           const meta = TEAM_METADATA[item.team];
-          const wins = meta.sampleWins;
-          const losses = meta.sampleLosses;
+          const live = standingsMap[item.team];
+          const wins = live?.wins ?? meta.sampleWins;
+          const losses = live?.losses ?? meta.sampleLosses;
           const projectedWins = Number((wins + pctRemaining * item.line).toFixed(1));
           const paceDiff = Number((projectedWins - item.line).toFixed(1));
           const currentPaceOutcome = projectedWins > item.line ? 'Over' : 'Under';

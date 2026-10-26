@@ -45,24 +45,31 @@ const ESPN_ABBR_TO_TEAM = {
 };
 
 /**
- * Calculates the Calendar Time-Decay Season Parameters
+ * Calculates the real-time Calendar Time-Decay Season Parameters
  * - Total Season Days = 172 days
- * - Days Elapsed = Current Date - Season Start Date (Default: Day 2 / 172)
+ * - Days Elapsed = Current Date - Season Start Date (computed dynamically from live system clock)
  * - % Season Completed = Days Elapsed / Total Season Days (capped between 0 and 1)
  * - % Season Remaining = 1 - % Season Completed
  */
+export function getLiveDaysElapsed() {
+  const totalSeasonDays = SEASON_CALENDAR.totalSeasonDays || 172;
+  const [startYear, startMonth, startDay] = SEASON_CALENDAR.startDate.split('-').map(Number);
+  const now = new Date();
+  const startUTC = Date.UTC(startYear, startMonth - 1, startDay);
+  const todayUTC = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  const diffDays = Math.round((todayUTC - startUTC) / (1000 * 60 * 60 * 24));
+  return Math.max(0, Math.min(totalSeasonDays, diffDays));
+}
+
 export function getSeasonProgress(customDaysElapsed = null) {
   const totalSeasonDays = SEASON_CALENDAR.totalSeasonDays || 172;
+  const liveDaysElapsed = getLiveDaysElapsed();
 
   let daysElapsed;
   if (typeof customDaysElapsed === 'number' && !Number.isNaN(customDaysElapsed)) {
     daysElapsed = Math.max(0, Math.min(totalSeasonDays, Math.round(customDaysElapsed)));
   } else {
-    const start = new Date(`${SEASON_CALENDAR.startDate}T00:00:00`);
-    const now = new Date();
-    const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const diffDays = Math.round((todayMidnight - start) / (1000 * 60 * 60 * 24));
-    daysElapsed = Math.max(0, Math.min(totalSeasonDays, diffDays));
+    daysElapsed = liveDaysElapsed;
   }
 
   const pctCompleted = Math.max(0, Math.min(1, daysElapsed / totalSeasonDays));
@@ -71,6 +78,8 @@ export function getSeasonProgress(customDaysElapsed = null) {
   return {
     totalSeasonDays,
     daysElapsed,
+    liveDaysElapsed,
+    isCustomDay: customDaysElapsed !== null && daysElapsed !== liveDaysElapsed,
     daysRemaining: totalSeasonDays - daysElapsed,
     pctCompleted,
     pctRemaining,
@@ -80,10 +89,12 @@ export function getSeasonProgress(customDaysElapsed = null) {
 }
 
 /**
- * Fetches live NBA standings from ESPN API v2
+ * Fetches live NBA standings from ESPN API v2 (with cache-busting query param so browsers always get fresh records)
  */
 export async function fetchLiveStandings() {
-  const response = await fetch(ESPN_STANDINGS_URL);
+  const response = await fetch(`${ESPN_STANDINGS_URL}?_t=${Date.now()}`, {
+    cache: 'no-store'
+  });
   if (!response.ok) {
     throw new Error(`ESPN API returned status ${response.status}`);
   }

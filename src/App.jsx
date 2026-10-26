@@ -34,11 +34,14 @@ export default function App() {
   const [activeFilter, setActiveFilter] = useState('ALL');
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [isSandboxMode, setIsSandboxMode] = useState(false);
-  const [customDaysElapsed, setCustomDaysElapsed] = useState(2); // Default: Day 2 / 172
+  const [customDaysElapsed, setCustomDaysElapsed] = useState(null); // null = always use live calendar date
   const [copiedReport, setCopiedReport] = useState(false);
 
-  const loadStandings = useCallback(async () => {
+  const loadStandings = useCallback(async (resetDayToLive = false) => {
     setIsRefreshing(true);
+    if (resetDayToLive) {
+      setCustomDaysElapsed(null);
+    }
     try {
       const liveMap = await fetchLiveStandings();
       const totalGames = Object.values(liveMap).reduce(
@@ -93,8 +96,28 @@ export default function App() {
     }
   }, []);
 
+  // Automatically fetch live standings on mount, when tab regains focus, and every 5 minutes
   useEffect(() => {
-    loadStandings();
+    loadStandings(true);
+
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === 'visible') {
+        loadStandings(false);
+      }
+    };
+
+    window.addEventListener('focus', handleVisibilityOrFocus);
+    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
+
+    const intervalId = setInterval(() => {
+      loadStandings(false);
+    }, 5 * 60 * 1000);
+
+    return () => {
+      window.removeEventListener('focus', handleVisibilityOrFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
+      clearInterval(intervalId);
+    };
   }, [loadStandings]);
 
   // Allow interactive What-If win adjustments in Sandbox mode
@@ -222,10 +245,10 @@ export default function App() {
 
             {/* Mobile Quick Sync Button */}
             <button
-              onClick={loadStandings}
+              onClick={() => loadStandings(true)}
               disabled={isRefreshing}
               className="md:hidden p-2 bg-[#1A1D23] border border-[#2A2F3A] text-[#9CA3AF] hover:text-white"
-              title="Refresh ESPN Standings"
+              title="Refresh ESPN Standings & Live Date"
             >
               <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-[#D97706]' : ''}`} />
             </button>
@@ -235,9 +258,13 @@ export default function App() {
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 font-mono text-[11px] sm:text-xs tabular-nums">
             {/* Compact Day Stepper */}
             <div className="bg-[#1A1D23] border border-[#2A2F3A] px-2 py-1 flex items-center gap-1.5">
-              <span className="text-[10px] text-[#9CA3AF] hidden sm:inline">DAY</span>
+              <span className="text-[10px] text-[#9CA3AF] hidden sm:inline">
+                {seasonProgress.isCustomDay ? 'SIM DAY' : 'LIVE DAY'}
+              </span>
               <button
-                onClick={() => setCustomDaysElapsed((d) => Math.max(0, (d ?? 2) - 1))}
+                onClick={() =>
+                  setCustomDaysElapsed(Math.max(0, seasonProgress.daysElapsed - 1))
+                }
                 className="w-5 h-5 bg-[#121316] border border-[#2A2F3A] hover:border-[#D97706] flex items-center justify-center text-white"
                 title="Previous Day"
               >
@@ -247,7 +274,9 @@ export default function App() {
                 {dayPadded}/172
               </span>
               <button
-                onClick={() => setCustomDaysElapsed((d) => Math.min(172, (d ?? 2) + 1))}
+                onClick={() =>
+                  setCustomDaysElapsed(Math.min(172, seasonProgress.daysElapsed + 1))
+                }
                 className="w-5 h-5 bg-[#121316] border border-[#2A2F3A] hover:border-[#D97706] flex items-center justify-center text-white"
                 title="Next Day"
               >
@@ -262,13 +291,14 @@ export default function App() {
                 className="w-16 accent-[#D97706] cursor-pointer hidden lg:block ml-1"
                 title="Scrub Season Day (0 to 172)"
               />
-              {seasonProgress.daysElapsed !== 2 && (
+              {seasonProgress.isCustomDay && (
                 <button
-                  onClick={() => setCustomDaysElapsed(2)}
-                  className="text-[10px] text-[#9CA3AF] hover:text-white px-0.5"
-                  title="Reset to Day 002"
+                  onClick={() => setCustomDaysElapsed(null)}
+                  className="text-[10px] text-[#D97706] hover:text-white px-1 font-bold flex items-center gap-0.5"
+                  title={`Reset to Today (Day ${String(seasonProgress.liveDaysElapsed).padStart(3, '0')})`}
                 >
                   <RotateCcw className="w-3 h-3" />
+                  <span>TODAY</span>
                 </button>
               )}
             </div>
@@ -328,10 +358,10 @@ export default function App() {
                 {dataSource === 'ESPN_LIVE' ? 'LIVE' : 'BASE'}
               </span>
               <button
-                onClick={loadStandings}
+                onClick={() => loadStandings(true)}
                 disabled={isRefreshing}
                 className="text-[#9CA3AF] hover:text-white disabled:opacity-50"
-                title="Refresh ESPN Standings API"
+                title="Refresh ESPN Standings API & Reset to Live Date"
               >
                 <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin' : ''}`} />
               </button>
